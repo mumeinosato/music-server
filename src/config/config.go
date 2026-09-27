@@ -27,7 +27,8 @@ var (
 	cfgOnce sync.Once
 )
 
-// Get は初回呼び出し時にだけ .env を読み込み、以降は同じ *Config を返す
+
+// GetEnv は初回呼び出し時にだけ .env を読み込み、以降は同じ *Config を返す
 func Get() *Config {
 	cfgOnce.Do(func() {
 		godotenv.Load()

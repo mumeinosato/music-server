@@ -23,6 +23,14 @@ func Sync_List() error {
 	}
 
 	hash := hasher.Sum(nil)
+	hash_str := hex.EncodeToString(hash)
+
+	_, latest_hash := db.Get_List(db.Mode.Latest)
+
+	if latest_hash == hash_str {
+		return nil
+	}
+
 	db.Update_List(video_ids, hex.EncodeToString(hash))
 	return nil
 }

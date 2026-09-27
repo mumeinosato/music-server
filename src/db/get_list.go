@@ -6,9 +6,39 @@ import (
 	"strings"
 )
 
+type mode int
+
+const (
+	mode_latest mode = iota
+	mode_from_hash
+)
+
+var Mode = struct {
+	Latest    mode
+	From_Hash mode
+}{
+	Latest:    mode_latest,
+	From_Hash: mode_from_hash,
+}
+
+func Get_List(m mode, hash ...string) ([]string, string) {
+	switch m {
+	case mode_latest:
+		return get_latest()
+	case mode_from_hash:
+		if len(hash) == 0 {
+			log.Fatal("hash is required for From_Hash mode")
+		}
+		return from_hash(hash[0])
+	default:
+		log.Fatal("invalid mode")
+		return nil, ""
+	}
+}
+
 func get_latest() ([]string, string) {
 	row := get_db().QueryRow(`
-		SELECT music_ids, hash FROM playlist ORDER BY created_at DESC LIMIT 1
+		SELECT music_ids, hash FROM playlist ORDER BY id DESC LIMIT 1
 	`)
 	return scan_playlist(row)
 }
