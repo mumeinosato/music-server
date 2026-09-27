@@ -3,9 +3,9 @@ package src
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"music-server/config"
-	"music-server/db"
-	"music-server/yt"
+	"music-server/src/config"
+	"music-server/src/db"
+	"music-server/src/yt"
 )
 
 func Sync_List() error {

@@ -3,10 +3,10 @@ package main
 import (
 	"errors"
 
-	"music-server/config"
-	"music-server/db"
+	"music-server/src/config"
+	"music-server/src/db"
 	"music-server/src"
-	"music-server/yt"
+	"music-server/src/yt"
 
 	"github.com/gin-gonic/gin"
 )

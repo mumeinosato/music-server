@@ -5,7 +5,7 @@ import (
 	"log"
 	"os"
 
-	"music-server/config"
+	"music-server/src/config"
 
 	"golang.org/x/oauth2"
 )

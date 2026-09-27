@@ -5,7 +5,7 @@ import (
 	"log"
 	"sync"
 
-	"music-server/config"
+	"music-server/src/config"
 
 	_ "github.com/mattn/go-sqlite3"
 )
