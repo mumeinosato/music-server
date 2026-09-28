@@ -37,21 +37,9 @@ func Download(ids []string) (map[string]string, error) {
 	var errs []error
 
 	for _, id := range ids {
-		cmd := exec.Command(bin,
-			"-f", "bestaudio",
-			"-x", "--audio-format", "opus",
-			"--no-playlist",
-			"-o", filepath.Join(temp_dir, "%(id)s.%(ext)s"),
-			"https://www.youtube.com/watch?v="+id,
-		)
-		if out, err := cmd.CombinedOutput(); err != nil {
-			errs = append(errs, fmt.Errorf("Failed to download %s: %w\n%s", id, err, out))
-			continue
-		}
-
-		path := filepath.Join(temp_dir, id+".opus")
-		if _, err := os.Stat(path); err != nil {
-			errs = append(errs, fmt.Errorf("Cannot find downloaded file for %s: %w", id, err))
+		path, err := download_one(bin, id)
+		if err != nil {
+			errs = append(errs, err)
 			continue
 		}
 		files[id] = path
@@ -60,8 +48,54 @@ func Download(ids []string) (map[string]string, error) {
 	return files, errors.Join(errs...)
 }
 
+// 試すフォーマットの順番（opus を優先し、それ以外は ffmpeg で opus に変換される）
+var audio_formats = []string{
+	"251", "250", "249", // webm / opus
+	"140", "139", // m4a
+	"234", "233", // m3u8
+	"bestaudio",
+}
+
+func download_one(bin string, id string) (string, error) {
+	path := filepath.Join(temp_dir, id+".opus")
+
+	var last_err error
+	for _, format := range audio_formats {
+		args := append(js_runtime_args(),
+			"-f", format,
+			"-x", "--audio-format", "opus",
+			"--no-playlist",
+			"-o", filepath.Join(temp_dir, "%(id)s.%(ext)s"),
+			"https://www.youtube.com/watch?v="+id,
+		)
+		cmd := exec.Command(bin, args...)
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			last_err = fmt.Errorf("Failed to download %s (format %s): %w\n%s", id, format, err, out)
+			continue
+		}
+
+		if _, err := os.Stat(path); err != nil {
+			last_err = fmt.Errorf("Cannot find downloaded file for %s (format %s): %w", id, format, err)
+			continue
+		}
+		return path, nil
+	}
+	return "", last_err
+}
+
 func Clean_Temp() {
 	if err := os.RemoveAll(temp_dir); err != nil {
 		log.Printf("Failed to remove tmp directory: %v", err)
 	}
+}
+
+func js_runtime_args() []string {
+	if _, err := exec.LookPath("deno"); err == nil {
+		return nil
+	}
+	if _, err := exec.LookPath("node"); err == nil {
+		return []string{"--js-runtimes", "node"}
+	}
+	return nil
 }

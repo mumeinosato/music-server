@@ -19,7 +19,14 @@ func main() {
 	r := gin.Default()
 
 	r.GET("/sync", func(c *gin.Context) {
-		err := src.Sync_List()
+		changed, err := src.Sync_List()
+
+		if errors.Is(err, src.ErrSyncInProgress) {
+			c.JSON(409, gin.H{
+				"message": err.Error(),
+			})
+			return
+		}
 
 		var auth_err *yt.AuthRequiredError
 		if errors.As(err, &auth_err) {
@@ -37,9 +44,31 @@ func main() {
 			return
 		}
 
-		c.JSON(200, gin.H{
-			"message": "sync completed",
+		if !changed {
+			c.JSON(200, gin.H{
+				"message": "already up to date",
+			})
+			return
+		}
+
+		// ダウンロード・アップロードはバックグラウンドで続行中（結果はサーバーのログに出る）
+		c.JSON(202, gin.H{
+			"message": "sync started in background",
 		})
+	})
+
+	r.GET("/is_syncing", func(c *gin.Context) {
+		if src.IsSyncing() {
+			c.JSON(200, gin.H{
+				"syncing": true,
+				"message": "sync is in progress",
+			})
+		} else {
+			c.JSON(200, gin.H{
+				"syncing": false,
+				"message": "no sync in progress",
+			})
+		}
 	})
 
 	// Google 認証後のリダイレクト先（SERVER_URL + "/callback"）

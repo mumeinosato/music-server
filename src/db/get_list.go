@@ -50,7 +50,6 @@ func from_hash(hash string) ([]string, string) {
 	return scan_playlist(row)
 }
 
-// scan_playlist は1行を読み取り、該当なしなら nil, "" を返す
 func scan_playlist(row *sql.Row) ([]string, string) {
 	var music_ids string
 	var hash string
@@ -61,5 +60,48 @@ func scan_playlist(row *sql.Row) ([]string, string) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	// strings.Split("", ",") は [""] になるので空リストは別扱い
+	if music_ids == "" {
+		return []string{}, hash
+	}
 	return strings.Split(music_ids, ","), hash
+}
+
+
+func Get_Music_Name(ids []string) []string {
+	names := make([]string, len(ids))
+	if len(ids) == 0 {
+		return names
+	}
+
+	args := make([]any, len(ids))
+	for i, id := range ids {
+		args[i] = id
+	}
+
+	rows, err := get_db().Query(`
+		SELECT music_id, name FROM music_name WHERE music_id IN (`+strings.Repeat("?,", len(ids)-1)+`?) ORDER BY id ASC
+	`, args...)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+
+	name_of := make(map[string]string, len(ids))
+	for rows.Next() {
+		var id string
+		var name string
+		if err := rows.Scan(&id, &name); err != nil {
+			log.Fatal(err)
+		}
+		name_of[id] = name
+	}
+	if err := rows.Err(); err != nil {
+		log.Fatal(err)
+	}
+
+	for i, id := range ids {
+		names[i] = name_of[id]
+	}
+	return names
 }
