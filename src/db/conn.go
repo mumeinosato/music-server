@@ -19,7 +19,9 @@ var (
 func get_db() *sql.DB {
 	connOnce.Do(func() {
 		var err error
-		conn, err = sql.Open("sqlite3", config.DataPath("music.db"))
+		// 同期(書き込み)中の /latest(読み取り)が "database is locked" で log.Fatal しないよう WAL + busy_timeout
+		dsn := "file:" + config.DataPath("music.db") + "?_busy_timeout=5000&_journal_mode=WAL"
+		conn, err = sql.Open("sqlite3", dsn)
 		if err != nil {
 			log.Fatal(err)
 		}

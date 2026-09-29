@@ -42,16 +42,17 @@ func Sync_List() (changed bool, err error) {
 	list_id := config.Get().YouTubePlaylistID
 	video_ids, video_names, err := yt.GetPlaylist(list_id)
 
-	db.Add_Music_Name(video_ids, video_names)
-
 	if err != nil {
 		return false, err
 	}
 
-	// DB には前回までに R2 に実際にあるIDが保存されている
-	old, _ := db.Get_List(db.Mode.Latest)
+	db.Add_Music_Name(video_ids, video_names)
 
-	if slices.Equal(video_ids, old) {
+	// DB には前回までに R2 に実際にあるIDが保存されている。
+	// リストを1件ずつ比べず、hash が一致すれば変更なしとする
+	old, old_hash := db.Get_List(db.Mode.Latest)
+
+	if db.Hash_List(video_ids) == old_hash || (len(video_ids) == 0 && old_hash == "") {
 		return false, nil
 	}
 

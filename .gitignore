@@ -31,4 +31,4 @@ data/client_secret.json
 data/music.db
 data/token.json
 !yt-dlp.exe
-tmp/
+tmp/data/music.db-*

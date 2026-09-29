@@ -42,3 +42,8 @@ func Add_Music_Name(ids []string, names []string) {
 		log.Fatal(err)
 	}
 }
+
+// Hash_List は Update_List が保存する hash と同じ方式で ids の hash を返す
+func Hash_List(ids []string) string {
+	return hash_list(ids)
+}

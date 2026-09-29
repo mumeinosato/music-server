@@ -67,7 +67,6 @@ func scan_playlist(row *sql.Row) ([]string, string) {
 	return strings.Split(music_ids, ","), hash
 }
 
-
 func Get_Music_Name(ids []string) []string {
 	names := make([]string, len(ids))
 	if len(ids) == 0 {

@@ -71,6 +71,20 @@ func main() {
 		}
 	})
 
+	r.GET("/latest", func(c *gin.Context) {
+		hash := c.Query("hash")
+		l := src.Get_Latest(hash)
+
+		c.JSON(200, gin.H{
+			"hash":       l.Hash,
+			"up_to_date": l.UpToDate,
+			"add":        l.Add,
+			"remove":     l.Remove,
+			"all_id":     l.AllID,
+			"all_name":   l.AllName,
+		})
+	})
+
 	// Google 認証後のリダイレクト先（SERVER_URL + "/callback"）
 	r.GET("/callback", func(c *gin.Context) {
 		if err := yt.HandleCallback(c.Query("code"), c.Query("state")); err != nil {
