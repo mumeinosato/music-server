@@ -1,0 +1,5 @@
+*.exe
+data/client_secret.json
+data/music.db
+data/token.json
+tmp/

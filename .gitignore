@@ -27,8 +27,6 @@ go.work
 # End of https://www.toptal.com/developers/gitignore/api/go
 
 .env
-data/client_secret.json
-data/music.db
-data/token.json
+data/*
 !yt-dlp.exe
 tmp/data/music.db-*
